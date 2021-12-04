@@ -1,0 +1,76 @@
+KAFKA_NODES: localhost:9092
+AUTO_CREATE_TOPICS: true
+ZK_NODES: localhost:2181
+
+TOPIC: my-test-topic
+GROUP: my-consumer-group
+
+DB_USER: postgres
+DB_PSW: postgres
+DB_URL: jdbc:postgresql://localhost:5432/postgres
+
+SHOW_SQL: true
+GENERATE_DDL: true
+DDL_AUTO: create
+
+spring:
+  application:
+    name: kafka-losing-messages
+  datasource:
+    username: ${DB_USER}
+    password: ${DB_PSW}
+    url: ${DB_URL}
+  jpa:
+    generate-ddl: ${GENERATE_DDL}
+    show-sql: ${SHOW_SQL}
+    hibernate:
+      ddl-auto: ${DDL_AUTO}
+    properties:
+      hibernate:
+        generate_statistics: false
+        jdbc:
+          batch_size: 30
+          batch_versioned_data: true
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_NODES}
+          auto-create-topics: ${AUTO_CREATE_TOPICS}
+          configuration:
+            max:
+              in:
+                flight:
+                  requests:
+                    per:
+                      connection: 1
+            request:
+              timeout:
+                ms: 2000
+            security:
+              protocol: PLAINTEXT
+          replicationFactor: 1
+          requiredAcks: all
+        bindings:
+          my-channel:
+            consumer:
+              autoCommitOffset: false
+      bindings:
+        my-channel:
+          binder: kafka
+          destination: ${TOPIC}
+          group: ${GROUP}
+          content-type: text/plain;charset=UTF-8
+  kafka:
+    bootstrap-servers: ${KAFKA_NODES}
+    consumer:
+      enable-auto-commit: false
+      isolation-level: read_committed
+
+eureka:
+  client:
+    enabled: false
+

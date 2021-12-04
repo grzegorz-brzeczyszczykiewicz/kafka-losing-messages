@@ -1,0 +1,23 @@
+version: '2.1'
+services:
+  quicksign-db:
+    image: postgres
+    restart: always
+    container_name: my-db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+
+networks:
+  my-db-network:
+    driver: bridge
+    name: my-db-network
